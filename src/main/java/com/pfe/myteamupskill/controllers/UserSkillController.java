@@ -13,7 +13,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Stream;
 
 @CrossOrigin(origins="http://localhost:3000")
 @RestController
@@ -39,16 +38,16 @@ public class UserSkillController {
   CampaignService campaignService;
 
 
- @GetMapping(value = "/userskills/{teamMemberId}")
+  @GetMapping(value = "/userskills/{teamMemberId}")
   //@GetMapping(value = "/userskills")
-  public ResponseEntity listUserSkills(Principal principal,@PathVariable("teamMemberId") String teamMemberId) {
-  //public ResponseEntity listUserSkills(Principal principal) {
-    //Integer userConnectedId = userService.getUserConnectedId(principal);
-    Integer userConnectedId = Integer.valueOf(teamMemberId);
-    TeamMember teamMemberSelected = teamMemberService.getTeamMember(userConnectedId);
+  public ResponseEntity listUserSkills(Principal principal, @PathVariable("teamMemberId") String teamMemberId) {
+    //public ResponseEntity listUserSkills(Principal principal) {
+    Integer userConnectedId = userService.getUserConnectedId(principal);
+    Integer teamMemberIdValue = Integer.valueOf(teamMemberId);
+    TeamMember teamMemberSelected = teamMemberService.getTeamMember(teamMemberIdValue);
     List<UserSkill> userSkills = userSkillService.listUserSkills(teamMemberSelected);
     List<UserSkillDTO> userSkillDTOList = new ArrayList<>();
-    for (UserSkill us: userSkills) {
+    for (UserSkill us : userSkills) {
       UserSkillDTO userSkillDTO = new UserSkillDTO();
       userSkillDTO.setUserSkillId(us.getId());
       userSkillDTO.setUserId(us.getTeamMember().getId());
@@ -62,8 +61,9 @@ public class UserSkillController {
     }
     return new ResponseEntity(userSkillDTOList, HttpStatus.OK);
   }
+
   @PostMapping("/userskills/{campaignId}")
-  public ResponseEntity add(Principal principal,@PathVariable("campaignId") String campaignId) {
+  public ResponseEntity add(Principal principal, @PathVariable("campaignId") String campaignId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     User existingUser = userService.getUser(userConnectedId);
     if (existingUser == null) {
@@ -72,45 +72,22 @@ public class UserSkillController {
     Campaign campaign = campaignService.getCampaign(Integer.valueOf(campaignId));
     List<Domain> domains = domainService.getDomains();
     HashMap<String, UserSkill> mapUserSkills = new HashMap<String, UserSkill>();
-    for (Domain d:domains){
+    for (Domain d : domains) {
       List<Skill> domainSkills = skillService.getDomainSkills(d.getLabel());
-      for (Skill s:domainSkills) {
-        UserSkill userSkill = userSkillService.saveUserSkill(s,(TeamMember) existingUser,campaign,userConnectedId);
+      for (Skill s : domainSkills) {
+        UserSkill userSkill = userSkillService.saveUserSkill(s, (TeamMember) existingUser, campaign, userConnectedId);
         mapUserSkills.put(d.getLabel(), userSkill);
       }
     }
-    TeamMember teamMemberCampaign = teamMemberService.updateTeamMemberCampaign((TeamMember)existingUser,EStatusUserCampaign.INITIALIZED);
-    System.out.println("userskills "+teamMemberCampaign.getStatusCurrentCampaign());
+    /*TeamMember teamMemberCampaign = teamMemberService.updateTeamMemberCampaign((TeamMember) existingUser, EStatusUserCampaign.INITIALIZED);
+    System.out.println("userskills " + teamMemberCampaign.getStatusCurrentCampaign());*/
     return new ResponseEntity<>(mapUserSkills, HttpStatus.CREATED);
-    }
-  @PutMapping(value = "/userskills/{userSkillId}")
-  public ResponseEntity update(Principal principal,@PathVariable("userSkillId") String userSkillId,@Valid @RequestBody UserSkill userSkill,@RequestParam(required = false) EStatusSkill status) {
-    Integer userConnectedId = userService.getUserConnectedId(principal);
-    User existingUser = userService.getUser(userConnectedId);
-    if (existingUser == null) {
-      return new ResponseEntity("User unknown", HttpStatus.NOT_FOUND);
-    }
-    UserSkill userSkillToUpdate = userSkillService.getUserSkill(Integer.valueOf(userSkillId));
-    if (userSkillToUpdate == null) {
-      return new ResponseEntity("UserSkill not existing", HttpStatus.NOT_FOUND);
-    }
-
-    //Case marked 0
-    if (status == EStatusSkill.MARKED && userSkill.getMark() == userSkillToUpdate.getMark()){
-      userSkillService.updateUserSkill(userSkillToUpdate,userConnectedId,status);
-    } else if (status != EStatusSkill.MARKED && userSkill.getMark() == userSkillToUpdate.getMark()){
-      //case validated && tobetrained
-      userSkillService.updateUserSkill(userSkillToUpdate,status);
-    } else {
-      //case revised && tobetrained && marked
-      userSkillService.updateUserSkill(userSkillToUpdate,userConnectedId,userSkill.getMark(),status);
-    }
-
-    return new ResponseEntity<>(userSkillToUpdate, HttpStatus.OK);
   }
 
   @PatchMapping(value = "/userskills/{userSkillId}/mark")
-  public ResponseEntity updateMark(Principal principal,@PathVariable("userSkillId") String userSkillId,@Valid @RequestBody UserSkillMarkDTO markToUpdate) {
+  public ResponseEntity updateMark(Principal principal,
+                                   @PathVariable("userSkillId") String userSkillId,
+                                   @Valid @RequestBody UserSkillMarkDTO markToUpdate) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     User existingUser = userService.getUser(userConnectedId);
     if (existingUser == null) {
@@ -121,22 +98,64 @@ public class UserSkillController {
       return new ResponseEntity("UserSkill not existing", HttpStatus.NOT_FOUND);
     }
 
-    userSkillToUpdate.setMark(markToUpdate.getMark());
-    // Verifier si la note est = et comprise entre 0 et 2
-    //Renvoie bad request
-    userSkillToUpdate = userSkillService.updateUserSkill(userSkillToUpdate);
-    UserSkillDTO userSkillDTO = new UserSkillDTO();
-    userSkillDTO.setUserSkillId(userSkillToUpdate.getId());
-    userSkillDTO.setUserId(userSkillToUpdate.getTeamMember().getId());
-    userSkillDTO.setLabel(userSkillToUpdate.getSkill().getLabel());
-    userSkillDTO.setLabelDomain(userSkillToUpdate.getSkill().getDomain().getLabel());
-    userSkillDTO.setLabelCampaign(userSkillToUpdate.getCampaign().getLabel());
-    userSkillDTO.setMark(userSkillToUpdate.getMark());
-    userSkillDTO.setLastWriterId(userSkillToUpdate.getLastWriterId());
-    userSkillDTO.setStatusSkill(userSkillToUpdate.getStatusSkill());
+    //if (userSkillToUpdate.getTeamMember().getStatusCurrentCampaign() == EStatusUserCampaign.INITIALIZED
+     // if (markToUpdate.getMark() != userSkillToUpdate.getMark() ){
+       try {
+          userSkillToUpdate.setMark(markToUpdate.getMark());
+          userSkillToUpdate.setStatusSkill(EStatusSkill.MARKED);
+          userSkillToUpdate = userSkillService.updateUserSkill(userSkillToUpdate);
+          UserSkillDTO userSkillDTO = new UserSkillDTO();
+          userSkillDTO.setUserSkillId(userSkillToUpdate.getId());
+          userSkillDTO.setUserId(userSkillToUpdate.getTeamMember().getId());
+          userSkillDTO.setLabel(userSkillToUpdate.getSkill().getLabel());
+          userSkillDTO.setLabelDomain(userSkillToUpdate.getSkill().getDomain().getLabel());
+          userSkillDTO.setLabelCampaign(userSkillToUpdate.getCampaign().getLabel());
+          userSkillDTO.setMark(userSkillToUpdate.getMark());
+          userSkillDTO.setLastWriterId(userSkillToUpdate.getLastWriterId());
+          userSkillDTO.setStatusSkill(userSkillToUpdate.getStatusSkill());
+          return new ResponseEntity<>(userSkillDTO, HttpStatus.OK);
+       } catch (IllegalArgumentException exception) {
+          return new ResponseEntity<>("Mark should be 0,1 or 2", HttpStatus.BAD_REQUEST);
+        }
+     /* } else {System.out.println("Pas de mise à jour car la note est la même");}
+     } else {
+        return new ResponseEntity<>("Mark rules not respected", HttpStatus.BAD_REQUEST);
+     }
+    return new ResponseEntity("StatusCampaign not good", HttpStatus.BAD_REQUEST);*/
+   }
 
-    return new ResponseEntity<>(userSkillDTO, HttpStatus.OK);
+  @PatchMapping(value = "/userskills/{userSkillId}/statusSkill")
+  public ResponseEntity updateStatusSkill(Principal principal,
+                                   @PathVariable("userSkillId") String userSkillId,
+                                   @Valid @RequestBody UserSkillStatusDTO statusToUpdate) {
+    Integer userConnectedId = userService.getUserConnectedId(principal);
+    User existingUser = userService.getUser(userConnectedId);
+
+    if (existingUser == null) {
+      return new ResponseEntity("User unknown", HttpStatus.NOT_FOUND);
+    }
+
+     UserSkill userSkillToPatch = userSkillService.getUserSkill(Integer.valueOf(userSkillId));
+    if (userSkillToPatch == null) {
+      return new ResponseEntity("UserSkill not existing", HttpStatus.NOT_FOUND);
+    }
+    try {
+      userSkillToPatch.setStatusSkill(EStatusSkill.valueOf(statusToUpdate.getStatusSkill()));
+      userSkillToPatch = userSkillService.updateUserSkill(userSkillToPatch);
+      UserSkillDTO userSkillDTO = new UserSkillDTO();
+      userSkillDTO.setUserSkillId(userSkillToPatch.getId());
+      userSkillDTO.setUserId(userSkillToPatch.getTeamMember().getId());
+      userSkillDTO.setLabel(userSkillToPatch.getSkill().getLabel());
+      userSkillDTO.setLabelDomain(userSkillToPatch.getSkill().getDomain().getLabel());
+      userSkillDTO.setLabelCampaign(userSkillToPatch.getCampaign().getLabel());
+      userSkillDTO.setMark(userSkillToPatch.getMark());
+      userSkillDTO.setLastWriterId(userSkillToPatch.getLastWriterId());
+      userSkillDTO.setStatusSkill(userSkillToPatch.getStatusSkill());
+      return new ResponseEntity<>(userSkillDTO, HttpStatus.OK);
+    } catch (IllegalArgumentException exception) {
+      return new ResponseEntity<>("Status should be VALIDATED or TO_BE_TRAINED", HttpStatus.BAD_REQUEST);
+    }
   }
-
-
 }
+
+

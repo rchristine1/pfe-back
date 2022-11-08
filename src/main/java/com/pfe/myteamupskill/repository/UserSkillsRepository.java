@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface UserSkillsRepository extends CrudRepository<UserSkill,Integer> {
   List<UserSkill> findByTeamMember(TeamMember teamMember);
+  List<UserSkill> findByTeamMemberAndStatusSkill(TeamMember teamMember,EStatusSkill statusSkill);
+
 }
 

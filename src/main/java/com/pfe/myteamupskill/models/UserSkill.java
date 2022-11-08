@@ -74,7 +74,11 @@ public class UserSkill {
   }
 
   public void setMark(int mark) {
-    this.mark = mark;
+    if ((mark <=2) && (mark >=-1 )) {
+      this.mark = mark;
+    } else {
+      throw new IllegalArgumentException("Mark not accepted");
+    }
   }
 
   public int getLastWriterId() {

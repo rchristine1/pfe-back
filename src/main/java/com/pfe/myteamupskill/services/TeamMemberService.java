@@ -32,6 +32,7 @@ public class TeamMemberService {
     return teamMember;
   }
 
+
   public TeamMember saveUser(TeamMember userEntity) {
     TeamMember user = new TeamMember();
     user.setLogin(userEntity.getLogin());
@@ -43,9 +44,9 @@ public class TeamMemberService {
     return user;
   }
 
-  public TeamMember updateTeamMemberCampaign (TeamMember teamMemberToUpdate,EStatusUserCampaign STATUS) {
-    teamMemberToUpdate.setStatusCurrentCampaign(STATUS);
+  public TeamMember updateTeamMemberCampaign (TeamMember teamMemberToUpdate) {
     teamMemberRepository.save(teamMemberToUpdate);
     return teamMemberToUpdate;
   }
+
 }

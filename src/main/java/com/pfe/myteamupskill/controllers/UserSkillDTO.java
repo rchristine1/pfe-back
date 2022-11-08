@@ -60,7 +60,11 @@ public class UserSkillDTO {
   }
 
   public void setMark(int mark) {
-    this.mark = mark;
+    if ((mark <=2) && (mark >=0 )) {
+      this.mark = mark;
+    } else {
+      throw new IllegalArgumentException("Mark not accepted");
+    }
   }
 
   public int getLastWriterId() {

@@ -19,12 +19,15 @@ public class UserSkillService {
     return (List<UserSkill>) userSkills;
   }
 
+  public List<UserSkill> listUserSkillsMarkedByTeamMember(TeamMember teamMember){
+    Iterable<UserSkill> userSkillsMarked = userSkillsRepository.findByTeamMemberAndStatusSkill(teamMember,EStatusSkill.MARKED);
+    return (List<UserSkill>) userSkillsMarked;
+  }
 
   public UserSkill saveUserSkill (Skill skillEntity, TeamMember teamMemberEntity, Campaign campaignEntity, Integer userWriterId) {
     UserSkill userSkills = new UserSkill();
     userSkills.setSkill(skillEntity);
     userSkills.setTeamMember(teamMemberEntity);
-    userSkills.setCampaign(campaignEntity);
     userSkills.setCampaign(campaignEntity);
     userSkills.setLastWriterId(userWriterId);
     userSkills.setStatusSkill(EStatusSkill.INITIALIZED);
@@ -32,40 +35,8 @@ public class UserSkillService {
     return userSkills;
   }
 
-  public UserSkill updateUserSkill (UserSkill skillEntity, Integer userWriterId,Integer mark) {
-    skillEntity.setMark(mark);
-    skillEntity.setLastWriterId(userWriterId);
-    skillEntity.setStatusSkill(EStatusSkill.MARKED);
-    userSkillsRepository.save(skillEntity);
-    return skillEntity;
-  }
-
-
-  public UserSkill updateUserSkill (UserSkill skillEntity, Integer userWriterId,Integer mark,EStatusSkill STATUS) {
-    skillEntity.setMark(mark);
-    skillEntity.setLastWriterId(userWriterId);
-    skillEntity.setStatusSkill(STATUS);
-    userSkillsRepository.save(skillEntity);
-    return skillEntity;
-  }
-
-  public UserSkill updateUserSkill (UserSkill skillEntity,Integer userWriterId, EStatusSkill STATUS) {
-    skillEntity.setLastWriterId(userWriterId);
-    skillEntity.setStatusSkill(STATUS);
-    userSkillsRepository.save(skillEntity);
-    return skillEntity;
-  }
-
-  public UserSkill updateUserSkill (UserSkill skillEntity,EStatusSkill STATUS) {
-    skillEntity.setStatusSkill(STATUS);
-    userSkillsRepository.save(skillEntity);
-    return skillEntity;
-  }
-
-
-
   public UserSkill getUserSkill(int id) {
-    Optional<UserSkill> userSkillsOptional=userSkillsRepository.findById(id);
+    Optional<UserSkill> userSkillsOptional= userSkillsRepository.findById(id);
     if (userSkillsOptional.isPresent())
       return userSkillsOptional.get();
     else
@@ -73,6 +44,7 @@ public class UserSkillService {
   }
 
   public UserSkill updateUserSkill(UserSkill userSkillToUpdate) {
+
     return userSkillsRepository.save(userSkillToUpdate);
   }
 }
