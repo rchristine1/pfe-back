@@ -1,5 +1,6 @@
 package com.pfe.myteamupskill.security.jwt;
 
+import com.pfe.myteamupskill.authentication.MyUser;
 import com.pfe.myteamupskill.payload.request.JwtRequest;
 import com.pfe.myteamupskill.payload.response.JwtResponse;
 import com.pfe.myteamupskill.services.UserService;
@@ -35,9 +36,7 @@ public class JwtController {
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.add("Authorization", "Bearer " + jwt);
     Object principal = authentication.getPrincipal();
-    Integer id = userService.findOneByLogin(((User) principal).getUsername()).getId();
-    System.out.println("Authenticate"+id);
-    return new ResponseEntity<>(new JwtResponse(((User) principal).getUsername(),id), httpHeaders, HttpStatus.OK);
+     return new ResponseEntity<>(new JwtResponse((((MyUser) principal).getUsername()),((MyUser) principal).getId(), ((MyUser) principal).getFirstname(), ((MyUser) principal).getLastname()), httpHeaders, HttpStatus.OK);
   }
 
   public Authentication logUser(String login, String password) {

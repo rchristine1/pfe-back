@@ -118,8 +118,15 @@ public abstract class User {
   public Set<Role> getRoles() {
     return roles;
   }
-
   public void setRoles(Set<Role> roles) {
     this.roles = roles;
   }
+
+  /*public int getUserType() {
+    return user_type;
+  }
+
+  public void setUserType(int userType) {
+    this.userType = userType;
+  }*/
 }

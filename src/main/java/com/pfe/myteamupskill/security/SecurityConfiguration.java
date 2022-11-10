@@ -39,7 +39,7 @@ public class SecurityConfiguration {
             .antMatchers("/teammembers/campaign/*").permitAll()
             .antMatchers("/teammembers/*").permitAll()
             .antMatchers("/domains").permitAll()
-            .antMatchers("/userskills/*").permitAll()
+            //.antMatchers("/userskills/*").permitAll()
             .antMatchers("/authenticate").permitAll()
             .antMatchers("/isConnected").permitAll()
             .antMatchers("/v3/api-docs/**").permitAll()

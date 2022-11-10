@@ -74,6 +74,8 @@ public class UserSkill {
   }
 
   public void setMark(int mark) {
+    //A mettre dans userSkill Service
+    // Entity Package
     if ((mark <=2) && (mark >=-1 )) {
       this.mark = mark;
     } else {
