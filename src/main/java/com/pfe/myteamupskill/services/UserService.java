@@ -35,7 +35,7 @@ public class UserService {
     if (userOptional.isPresent())
       return userOptional.get();
     else
-      throw new IllegalArgumentException("user non existing");
+      throw new IllegalArgumentException("User non existing");
   }
 
   public Integer getUserConnectedId(Principal principal) {

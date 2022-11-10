@@ -1,17 +1,16 @@
 package com.pfe.myteamupskill.controllers;
 
+import com.pfe.myteamupskill.authentication.MyUser;
 import com.pfe.myteamupskill.payload.response.JwtResponse;
 import com.pfe.myteamupskill.security.jwt.JwtController;
 import com.pfe.myteamupskill.security.jwt.JwtUtils;
 import com.pfe.myteamupskill.services.ManagerService;
 import com.pfe.myteamupskill.services.TeamMemberService;
-import com.pfe.myteamupskill.services.UserDetailsImpl;
 import com.pfe.myteamupskill.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,10 +60,13 @@ public class UserController {
   public ResponseEntity getUSerConnected() {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     if (principal instanceof UserDetails) {
-      return new ResponseEntity(((UserDetails) principal).getUsername(), HttpStatus.OK);
+      System.out.println("condition if");
+      return new ResponseEntity((((UserDetails) principal).getUsername()),HttpStatus.OK);
       //UserDetailsImpl userDetails = (UserDetailsImpl) principal;
+      //return new ResponseEntity<>(new JwtResponse(((MyUser) principal).getUsername(),((MyUser) principal).getId(),((MyUser) principal).getFirstname(), ((MyUser) principal).getLastname()),HttpStatus.OK);
       //return new ResponseEntity(new JwtResponse(userDetails.getUsername(),userDetails.getId()), HttpStatus.OK);
     }
     return new ResponseEntity("User is not connected", HttpStatus.FORBIDDEN);
   }
-}
+
+  }
