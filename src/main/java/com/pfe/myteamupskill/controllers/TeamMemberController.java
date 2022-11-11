@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.yaml.snakeyaml.util.EnumUtils;
 
 import javax.validation.Valid;
 import java.security.Principal;
@@ -54,6 +55,38 @@ public class TeamMemberController {
     teamMemberDTO.setStatusLastCampaign(teamMemberSelected.getStatusLastCampaign());
 
     return new ResponseEntity(teamMemberDTO, HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/teammembers/statuscampaign")
+  @ResponseBody
+  public ResponseEntity teammembersStatusCampaign(Principal principal,
+                                                  @RequestParam(required = false) String status) {
+    Integer userConnectedId = userService.getUserConnectedId(principal);
+    List<TeamMember> teamMemberList;
+    TeamMemberCampaignDTO teamMemberCampaignDTO = new TeamMemberCampaignDTO();
+    teamMemberCampaignDTO.setStatusUserCampaign(EStatusUserCampaign.valueOf(status));
+
+    if (status != null && teamMemberCampaignDTO.getStatusUserCampaign() == EStatusUserCampaign.SUBMITTED){
+      teamMemberList = teamMemberService.getTeamMembersByStatusCurrentCampaign(teamMemberCampaignDTO.getStatusUserCampaign());
+    } else {
+      teamMemberList = teamMemberService.getTeamMembers();
+    }
+
+    List<TeamMemberDTO> teamMemberDTOList = new ArrayList<>();
+    for (TeamMember tm :teamMemberList) {
+      TeamMemberDTO teamMemberDTO = new TeamMemberDTO();
+      teamMemberDTO.setManager(tm.getManager());
+      teamMemberDTO.setStatusCurrentCampaign(tm.getStatusCurrentCampaign());
+      teamMemberDTO.setStatusVolunteerTrainer(tm.getStatusVolunteerTrainer());
+      teamMemberDTO.setStatusLastCampaign(tm.getStatusLastCampaign());
+      teamMemberDTO.setId(tm.getId());
+      teamMemberDTO.setFirstname(tm.getFirstName());
+      teamMemberDTO.setLastname(tm.getLastName());
+      teamMemberDTO.setPicture(tm.getPicture());
+      teamMemberDTOList.add(teamMemberDTO);
+    }
+    return new ResponseEntity(teamMemberDTOList, HttpStatus.OK);
+
   }
 
   @PostMapping("/teammembers/")

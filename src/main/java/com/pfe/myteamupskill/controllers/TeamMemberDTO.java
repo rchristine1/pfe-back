@@ -5,7 +5,7 @@ import com.pfe.myteamupskill.models.EStatusVolunteer;
 import com.pfe.myteamupskill.models.Manager;
 
 
-public class TeamMemberDTO {
+public class TeamMemberDTO extends UserDTO{
   private Manager manager;
   private EStatusVolunteer statusVolunteerTrainer;
   private EStatusUserCampaign statusCurrentCampaign;

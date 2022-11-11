@@ -122,11 +122,4 @@ public abstract class User {
     this.roles = roles;
   }
 
-  /*public int getUserType() {
-    return user_type;
-  }
-
-  public void setUserType(int userType) {
-    this.userType = userType;
-  }*/
 }

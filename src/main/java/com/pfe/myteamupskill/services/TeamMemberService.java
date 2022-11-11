@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,7 +28,18 @@ public class TeamMemberService {
       throw new IllegalArgumentException("teamMember non existant");
   }
 
+  public List<TeamMember> getTeamMembersByStatusCurrentCampaign(EStatusUserCampaign status) {
+    Iterable<TeamMember> teamMembers= teamMemberRepository.findByStatusCurrentCampaign(status);
+    return (List<TeamMember>) teamMembers;
+  }
+
+  public List<TeamMember> getTeamMembers() {
+    Iterable<TeamMember> teamMembers= teamMemberRepository.findAll();
+    return (List<TeamMember>) teamMembers;
+  }
+
   public TeamMember findOneByLogin(String login) {
+
     TeamMember teamMember = teamMemberRepository.findOneByLogin(login);
     return teamMember;
   }
