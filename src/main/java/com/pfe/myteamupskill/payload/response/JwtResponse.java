@@ -1,6 +1,8 @@
 package com.pfe.myteamupskill.payload.response;
 
-import java.util.List;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 
 public class JwtResponse {
 
@@ -8,14 +10,15 @@ public class JwtResponse {
   private Integer id;
   private String firstname;
   private String lastname;
-  private List<String> roles;
+  private Collection<? extends GrantedAuthority> authorities;
 
-  public JwtResponse(String username, Integer id,String firstname,String lastname) {
+  public JwtResponse(String username, Integer id,String firstname,String lastname,Collection<? extends GrantedAuthority> authorities) {
 
     this.userName = username;
     this.id = id;
     this.firstname = firstname;
     this.lastname = lastname;
+    this.authorities = authorities;
 
   }
 
@@ -35,12 +38,12 @@ public class JwtResponse {
     this.id = id;
   }
 
-  public List<String> getRoles() {
-    return roles;
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return authorities;
   }
 
-  public void setRoles(List<String> roles) {
-    this.roles = roles;
+  public void setAuthorities(Collection<? extends GrantedAuthority> roles) {
+    this.authorities = authorities;
   }
 
   public String getFirstname() {

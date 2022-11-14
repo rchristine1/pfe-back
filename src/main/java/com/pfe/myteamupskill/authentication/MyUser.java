@@ -41,4 +41,6 @@ public class MyUser extends User {
   public Integer getId() {
     return id;
   }
+
+
 }

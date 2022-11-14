@@ -5,17 +5,17 @@ import com.pfe.myteamupskill.models.EStatusVolunteer;
 import com.pfe.myteamupskill.models.Manager;
 
 
-public class TeamMemberDTO extends UserDTO{
-  private Manager manager;
+public class TeamMemberDto extends UserDto {
+  private String manager;
   private EStatusVolunteer statusVolunteerTrainer;
   private EStatusUserCampaign statusCurrentCampaign;
   private EStatusUserCampaign statusLastCampaign;
 
-  public Manager getManager() {
+  public String getManager() {
     return manager;
   }
 
-  public void setManager(Manager manager) {
+  public void setManager(String manager) {
     this.manager = manager;
   }
 
@@ -42,4 +42,6 @@ public class TeamMemberDTO extends UserDTO{
   public void setStatusLastCampaign(EStatusUserCampaign statusLastCampaign) {
     this.statusLastCampaign = statusLastCampaign;
   }
+
+
 }

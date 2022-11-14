@@ -28,8 +28,8 @@ public class TeamMemberService {
       throw new IllegalArgumentException("teamMember non existant");
   }
 
-  public List<TeamMember> getTeamMembersByStatusCurrentCampaign(EStatusUserCampaign status) {
-    Iterable<TeamMember> teamMembers= teamMemberRepository.findByStatusCurrentCampaign(status);
+  public List<TeamMember> findByStatusCurrentCampaignAndManagerId(EStatusUserCampaign status,Integer id) {
+    Iterable<TeamMember> teamMembers= teamMemberRepository.findByStatusCurrentCampaignAndManagerId(status,id);
     return (List<TeamMember>) teamMembers;
   }
 

@@ -2,7 +2,7 @@ package com.pfe.myteamupskill.controllers;
 
 import com.pfe.myteamupskill.models.EStatusCampaign;
 
-public class UserCampaignDTO {
+public class UserCampaignDto {
 
   private EStatusCampaign status;
 

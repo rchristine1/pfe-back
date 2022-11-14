@@ -1,20 +1,21 @@
 package com.pfe.myteamupskill.controllers;
 
 import com.pfe.myteamupskill.models.Manager;
+import com.pfe.myteamupskill.models.TeamMember;
 import com.pfe.myteamupskill.security.jwt.JwtController;
 import com.pfe.myteamupskill.security.jwt.JwtFilter;
 import com.pfe.myteamupskill.security.jwt.JwtUtils;
 import com.pfe.myteamupskill.services.ManagerService;
+import com.pfe.myteamupskill.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.security.Principal;
 
 @RestController
 public class ManagerController {
@@ -26,6 +27,26 @@ public class ManagerController {
 
   @Autowired
   JwtUtils jwtUtils;
+
+  @Autowired
+  UserService userService;
+
+  @GetMapping(value = "/managers/{managerId}")
+  public ResponseEntity teammember(Principal principal, @PathVariable("managerId") String managerId) {
+    Integer userConnectedId = userService.getUserConnectedId(principal);
+    Integer managerIdValue = Integer.valueOf(managerId);
+    Manager managerSelected = managerService.findById(managerIdValue);
+    if (managerSelected == null) {
+      return new ResponseEntity("Manager not existing", HttpStatus.NOT_FOUND);
+    }
+    ManagerDto managerDto = new ManagerDto();
+    managerDto.setTeam(managerSelected.getTeam().getDepartment()
+            +'-'+managerSelected.getTeam().getDivision()
+            +'-'+managerSelected.getTeam().getName());
+
+    return new ResponseEntity(managerDto, HttpStatus.OK);
+  }
+
 
   @PostMapping("/managers/")
   public ResponseEntity add(@Valid @RequestBody Manager userEntity) {

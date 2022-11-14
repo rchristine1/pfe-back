@@ -1,6 +1,6 @@
 package com.pfe.myteamupskill.controllers;
 
-public class UserSkillMarkDTO {
+public class UserSkillMarkDto {
   Integer mark;
 
   public Integer getMark() {

@@ -12,10 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.yaml.snakeyaml.util.EnumUtils;
 
 import javax.validation.Valid;
 import java.security.Principal;
@@ -48,34 +46,39 @@ public class TeamMemberController {
     if (teamMemberSelected == null) {
       return new ResponseEntity("TeamMember not existing", HttpStatus.NOT_FOUND);
     }
-    TeamMemberDTO teamMemberDTO = new TeamMemberDTO();
-    teamMemberDTO.setManager(teamMemberSelected.getManager());
+    TeamMemberDto teamMemberDTO = new TeamMemberDto();
+    teamMemberDTO.setManager(teamMemberSelected.getManager().getFirstName()+' '+ teamMemberSelected.getManager().getLastName());
     teamMemberDTO.setStatusCurrentCampaign(teamMemberSelected.getStatusCurrentCampaign());
     teamMemberDTO.setStatusVolunteerTrainer(teamMemberSelected.getStatusVolunteerTrainer());
     teamMemberDTO.setStatusLastCampaign(teamMemberSelected.getStatusLastCampaign());
+    teamMemberDTO.setFirstname(teamMemberSelected.getFirstName());
+    teamMemberDTO.setLastname(teamMemberSelected.getLastName());
 
     return new ResponseEntity(teamMemberDTO, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/teammembers/statuscampaign")
+  @GetMapping(value = "/teammembers/statuscampaign/{managerId}")
   @ResponseBody
   public ResponseEntity teammembersStatusCampaign(Principal principal,
-                                                  @RequestParam(required = false) String status) {
+                                                  @RequestParam(required = false) String status,
+                                                  @PathVariable("managerId") String managerId ) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     List<TeamMember> teamMemberList;
-    TeamMemberCampaignDTO teamMemberCampaignDTO = new TeamMemberCampaignDTO();
+    TeamMemberCampaignDto teamMemberCampaignDTO = new TeamMemberCampaignDto();
     teamMemberCampaignDTO.setStatusUserCampaign(EStatusUserCampaign.valueOf(status));
 
     if (status != null && teamMemberCampaignDTO.getStatusUserCampaign() == EStatusUserCampaign.SUBMITTED){
-      teamMemberList = teamMemberService.getTeamMembersByStatusCurrentCampaign(teamMemberCampaignDTO.getStatusUserCampaign());
+      teamMemberList = teamMemberService.findByStatusCurrentCampaignAndManagerId(
+              teamMemberCampaignDTO.getStatusUserCampaign(),
+              Integer.valueOf(managerId));
     } else {
       teamMemberList = teamMemberService.getTeamMembers();
     }
 
-    List<TeamMemberDTO> teamMemberDTOList = new ArrayList<>();
+    List<TeamMemberDto> teamMemberDTOList = new ArrayList<>();
     for (TeamMember tm :teamMemberList) {
-      TeamMemberDTO teamMemberDTO = new TeamMemberDTO();
-      teamMemberDTO.setManager(tm.getManager());
+      TeamMemberDto teamMemberDTO = new TeamMemberDto();
+      teamMemberDTO.setManager(tm.getManager().getFirstName()+' '+ tm.getManager().getLastName());
       teamMemberDTO.setStatusCurrentCampaign(tm.getStatusCurrentCampaign());
       teamMemberDTO.setStatusVolunteerTrainer(tm.getStatusVolunteerTrainer());
       teamMemberDTO.setStatusLastCampaign(tm.getStatusLastCampaign());
@@ -108,7 +111,7 @@ public class TeamMemberController {
   //@PreAuthorize()
   public ResponseEntity updateStatusCurrentCampaign(Principal principal,
                                                     @PathVariable("teamMemberId") String teamMemberId,
-                                                    @Valid @RequestBody TeamMemberCampaignDTO statusCampaignToUpdate) {
+                                                    @Valid @RequestBody TeamMemberCampaignDto statusCampaignToUpdate) {
     Integer userConnectedIdP = userService.getUserConnectedId(principal);
     User existingUserP = userService.getUser(userConnectedIdP);
     if (existingUserP == null) {
@@ -124,8 +127,8 @@ public class TeamMemberController {
       try {
         teamMemberToPatch.setStatusCurrentCampaign(statusCampaignToUpdate.getStatusUserCampaign());
         teamMemberToPatch = teamMemberService.updateTeamMemberCampaign(teamMemberToPatch);
-        TeamMemberDTO teamMemberDTO = new TeamMemberDTO();
-        teamMemberDTO.setManager(teamMemberToPatch.getManager());
+        TeamMemberDto teamMemberDTO = new TeamMemberDto();
+        teamMemberDTO.setManager(teamMemberToPatch.getManager().getFirstName()+' '+ teamMemberToPatch.getManager().getLastName());
         teamMemberDTO.setStatusCurrentCampaign(teamMemberToPatch.getStatusCurrentCampaign());
         teamMemberDTO.setStatusVolunteerTrainer(teamMemberToPatch.getStatusVolunteerTrainer());
         teamMemberDTO.setStatusLastCampaign(teamMemberToPatch.getStatusLastCampaign());

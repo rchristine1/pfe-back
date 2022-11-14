@@ -1,6 +1,6 @@
 package com.pfe.myteamupskill.controllers;
 
-public class UserDTO {
+public class UserDto {
 
   private  Integer id;
 

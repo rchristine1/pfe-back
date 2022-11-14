@@ -46,9 +46,9 @@ public class UserSkillController {
     Integer teamMemberIdValue = Integer.valueOf(teamMemberId);
     TeamMember teamMemberSelected = teamMemberService.getTeamMember(teamMemberIdValue);
     List<UserSkill> userSkills = userSkillService.listUserSkills(teamMemberSelected);
-    List<UserSkillDTO> userSkillDTOList = new ArrayList<>();
+    List<UserSkillDto> userSkillDTOList = new ArrayList<>();
     for (UserSkill us : userSkills) {
-      UserSkillDTO userSkillDTO = new UserSkillDTO();
+      UserSkillDto userSkillDTO = new UserSkillDto();
       userSkillDTO.setUserSkillId(us.getId());
       userSkillDTO.setUserId(us.getTeamMember().getId());
       userSkillDTO.setLabel(us.getSkill().getLabel());
@@ -87,7 +87,7 @@ public class UserSkillController {
   @PatchMapping(value = "/userskills/{userSkillId}/mark")
   public ResponseEntity updateMark(Principal principal,
                                    @PathVariable("userSkillId") String userSkillId,
-                                   @Valid @RequestBody UserSkillMarkDTO markToUpdate) {
+                                   @Valid @RequestBody UserSkillMarkDto markToUpdate) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     User existingUser = userService.getUser(userConnectedId);
     if (existingUser == null) {
@@ -104,7 +104,7 @@ public class UserSkillController {
           userSkillToUpdate.setMark(markToUpdate.getMark());
           userSkillToUpdate.setStatusSkill(EStatusSkill.MARKED);
           userSkillToUpdate = userSkillService.updateUserSkill(userSkillToUpdate);
-          UserSkillDTO userSkillDTO = new UserSkillDTO();
+          UserSkillDto userSkillDTO = new UserSkillDto();
           userSkillDTO.setUserSkillId(userSkillToUpdate.getId());
           userSkillDTO.setUserId(userSkillToUpdate.getTeamMember().getId());
           userSkillDTO.setLabel(userSkillToUpdate.getSkill().getLabel());
@@ -127,7 +127,7 @@ public class UserSkillController {
   @PatchMapping(value = "/userskills/{userSkillId}/statusSkill")
   public ResponseEntity updateStatusSkill(Principal principal,
                                    @PathVariable("userSkillId") String userSkillId,
-                                   @Valid @RequestBody UserSkillStatusDTO statusToUpdate) {
+                                   @Valid @RequestBody UserSkillStatusDto statusToUpdate) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     User existingUser = userService.getUser(userConnectedId);
 
@@ -142,7 +142,7 @@ public class UserSkillController {
     try {
       userSkillToPatch.setStatusSkill(EStatusSkill.valueOf(statusToUpdate.getStatusSkill()));
       userSkillToPatch = userSkillService.updateUserSkill(userSkillToPatch);
-      UserSkillDTO userSkillDTO = new UserSkillDTO();
+      UserSkillDto userSkillDTO = new UserSkillDto();
       userSkillDTO.setUserSkillId(userSkillToPatch.getId());
       userSkillDTO.setUserId(userSkillToPatch.getTeamMember().getId());
       userSkillDTO.setLabel(userSkillToPatch.getSkill().getLabel());

@@ -21,6 +21,10 @@ public class ManagerService {
     return manager;
   }
 
+  public Manager findById(int id) {
+    Manager manager = managerRepository.findById(id);
+    return manager;
+  }
   public Manager saveUser(Manager userEntity) {
     Manager user = new Manager();
     user.setLogin(userEntity.getLogin());

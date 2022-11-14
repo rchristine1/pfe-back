@@ -36,7 +36,13 @@ public class JwtController {
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.add("Authorization", "Bearer " + jwt);
     Object principal = authentication.getPrincipal();
-     return new ResponseEntity<>(new JwtResponse((((MyUser) principal).getUsername()),((MyUser) principal).getId(), ((MyUser) principal).getFirstname(), ((MyUser) principal).getLastname()), httpHeaders, HttpStatus.OK);
+     return new ResponseEntity<>(
+             new JwtResponse(
+                      ((MyUser) principal).getUsername(),
+                      ((MyUser) principal).getId(),
+                      ((MyUser) principal).getFirstname(),
+                      ((MyUser) principal).getLastname(),
+                      ((MyUser) principal).getAuthorities()), httpHeaders, HttpStatus.OK);
   }
 
   public Authentication logUser(String login, String password) {

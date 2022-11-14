@@ -2,7 +2,7 @@ package com.pfe.myteamupskill.controllers;
 
 import com.pfe.myteamupskill.models.EStatusSkill;
 
-public class UserSkillStatusDTO {
+public class UserSkillStatusDto {
   private String statusSkill;
 
   public String getStatusSkill() {
