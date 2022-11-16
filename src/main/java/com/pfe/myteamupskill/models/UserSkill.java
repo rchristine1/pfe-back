@@ -1,6 +1,7 @@
 package com.pfe.myteamupskill.models;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "user_skills")
@@ -19,7 +20,7 @@ public class UserSkill {
   @ManyToOne
   @JoinColumn(name = "campaignid",referencedColumnName = "campaignid")
   private Campaign campaign;
-  private int mark;
+  private Integer mark;
   @Column(name = "lastwriterid")
   private int lastWriterId;
   @Column(name = "statusskill")
@@ -27,7 +28,7 @@ public class UserSkill {
 
   public UserSkill() {  }
 
-  public UserSkill(int id, TeamMember teamMember, Skill skill, Campaign campaign, int mark, int lastWriterId, EStatusSkill statusSkill) {
+  public UserSkill(int id, TeamMember teamMember, Skill skill, Campaign campaign, Integer mark, int lastWriterId, EStatusSkill statusSkill) {
     this.id = id;
     this.teamMember = teamMember;
     this.skill = skill;
@@ -69,18 +70,12 @@ public class UserSkill {
     this.campaign = campaign;
   }
 
-  public int getMark() {
+  public Integer getMark() {
     return mark;
   }
 
-  public void setMark(int mark) {
-    //A mettre dans userSkill Service
-    // Entity Package
-    if ((mark <=2) && (mark >=-1 )) {
+  public void setMark(Integer mark) {
       this.mark = mark;
-    } else {
-      throw new IllegalArgumentException("Mark not accepted");
-    }
   }
 
   public int getLastWriterId() {
@@ -97,5 +92,18 @@ public class UserSkill {
 
   public void setStatusSkill(EStatusSkill statusSkill) {
     this.statusSkill = statusSkill;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UserSkill userSkill = (UserSkill) o;
+    return Objects.equals(getTeamMember(), userSkill.getTeamMember()) && Objects.equals(getSkill(), userSkill.getSkill()) && Objects.equals(getCampaign(), userSkill.getCampaign());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getTeamMember(), getSkill(), getCampaign());
   }
 }

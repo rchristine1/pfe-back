@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +33,7 @@ public class ManagerController {
   UserService userService;
 
   @GetMapping(value = "/managers/{managerId}")
+  //@PreAuthorize("hasRole('TEAMLEADER')")
   public ResponseEntity teammember(Principal principal, @PathVariable("managerId") String managerId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     Integer managerIdValue = Integer.valueOf(managerId);
@@ -49,6 +51,7 @@ public class ManagerController {
 
 
   @PostMapping("/managers/")
+  @PreAuthorize("hasRole('TEAMLEADER')")
   public ResponseEntity add(@Valid @RequestBody Manager userEntity) {
 
     Manager existingUser = managerService.findOneByLogin(userEntity.getLogin());

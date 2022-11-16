@@ -12,6 +12,7 @@ import java.util.List;
 public interface TeamMemberRepository extends CrudRepository<TeamMember,Integer> {
   TeamMember findOneByLogin(String login);
   List<TeamMember> findAll();
+  List<TeamMember> findByManager(Integer id);
   List<TeamMember> findByStatusCurrentCampaignAndManagerId(EStatusUserCampaign status,Integer id);
   TeamMember findOneById(Integer id);
 }

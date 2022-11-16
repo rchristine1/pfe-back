@@ -1,6 +1,7 @@
 package com.pfe.myteamupskill.services;
 
 import com.pfe.myteamupskill.models.Campaign;
+import com.pfe.myteamupskill.models.EStatusCampaign;
 import com.pfe.myteamupskill.repository.CampaignRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,22 @@ public class CampaignService {
 
   public Campaign getCampaign(int id) {
     Optional<Campaign> campaignOptional=campaignRepository.findById(id);
+    if (campaignOptional.isPresent())
+      return campaignOptional.get();
+    else
+      throw new IllegalArgumentException("Campaign not found");
+  }
+
+  public Campaign findCampaignByLabel(String label) {
+    Optional<Campaign> campaignOptional=campaignRepository.findByLabel(label);
+    if (campaignOptional.isPresent())
+      return campaignOptional.get();
+    else
+      throw new IllegalArgumentException("Campaign not found");
+  }
+
+  public Campaign getCampaignCurrent(EStatusCampaign status) {
+    Optional<Campaign> campaignOptional=campaignRepository.findByStatus(status);
     if (campaignOptional.isPresent())
       return campaignOptional.get();
     else

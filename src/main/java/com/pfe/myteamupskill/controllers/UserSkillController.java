@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -39,13 +40,18 @@ public class UserSkillController {
 
 
   @GetMapping(value = "/userskills/{teamMemberId}")
-  //@GetMapping(value = "/userskills")
+  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity listUserSkills(Principal principal, @PathVariable("teamMemberId") String teamMemberId) {
-    //public ResponseEntity listUserSkills(Principal principal) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
-    Integer teamMemberIdValue = Integer.valueOf(teamMemberId);
-    TeamMember teamMemberSelected = teamMemberService.getTeamMember(teamMemberIdValue);
+    TeamMember teamMemberSelected = teamMemberService.getTeamMember(Integer.valueOf(teamMemberId));
+    if (teamMemberSelected == null) {
+      return new ResponseEntity("TeamMember unknown", HttpStatus.BAD_REQUEST);
+    }
+
     List<UserSkill> userSkills = userSkillService.listUserSkills(teamMemberSelected);
+    if (userSkills == null) {
+      return new ResponseEntity("UserSkills not initialized", HttpStatus.BAD_REQUEST);
+    }
     List<UserSkillDto> userSkillDTOList = new ArrayList<>();
     for (UserSkill us : userSkills) {
       UserSkillDto userSkillDTO = new UserSkillDto();
@@ -63,28 +69,34 @@ public class UserSkillController {
   }
 
   @PostMapping("/userskills/{campaignId}")
+  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity add(Principal principal, @PathVariable("campaignId") String campaignId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
+    Campaign existingCampaign = campaignService.getCampaign(Integer.valueOf(campaignId));
+    if (existingCampaign == null) {
+      return new ResponseEntity("Campaign unknown", HttpStatus.BAD_REQUEST);
+    }
+
     User existingUser = userService.getUser(userConnectedId);
     if (existingUser == null) {
       return new ResponseEntity("User unknown", HttpStatus.BAD_REQUEST);
     }
-    Campaign campaign = campaignService.getCampaign(Integer.valueOf(campaignId));
+
     List<Domain> domains = domainService.getDomains();
     HashMap<String, UserSkill> mapUserSkills = new HashMap<String, UserSkill>();
     for (Domain d : domains) {
       List<Skill> domainSkills = skillService.getDomainSkills(d.getLabel());
       for (Skill s : domainSkills) {
-        UserSkill userSkill = userSkillService.saveUserSkill(s, (TeamMember) existingUser, campaign, userConnectedId);
-        mapUserSkills.put(d.getLabel(), userSkill);
+
+          UserSkill userSkill = userSkillService.saveUserSkill(s, (TeamMember) existingUser, existingCampaign, userConnectedId);
+          mapUserSkills.put(d.getLabel(), userSkill);
       }
     }
-    /*TeamMember teamMemberCampaign = teamMemberService.updateTeamMemberCampaign((TeamMember) existingUser, EStatusUserCampaign.INITIALIZED);
-    System.out.println("userskills " + teamMemberCampaign.getStatusCurrentCampaign());*/
-    return new ResponseEntity<>(mapUserSkills, HttpStatus.CREATED);
+     return new ResponseEntity<>(mapUserSkills, HttpStatus.CREATED);
   }
 
   @PatchMapping(value = "/userskills/{userSkillId}/mark")
+  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity updateMark(Principal principal,
                                    @PathVariable("userSkillId") String userSkillId,
                                    @Valid @RequestBody UserSkillMarkDto markToUpdate) {
@@ -97,32 +109,21 @@ public class UserSkillController {
     if (userSkillToUpdate == null) {
       return new ResponseEntity("UserSkill not existing", HttpStatus.NOT_FOUND);
     }
+    userSkillService.updateUserSkillMarkAndStatus(
+                userSkillToUpdate,markToUpdate.getMark(),
+                userSkillToUpdate.getMark(), existingUser);
+    UserSkillDto userSkillDTO = new UserSkillDto();
+    userSkillDTO.setUserSkillId(userSkillToUpdate.getId());
+    userSkillDTO.setUserId(userSkillToUpdate.getTeamMember().getId());
+    userSkillDTO.setLabel(userSkillToUpdate.getSkill().getLabel());
+    userSkillDTO.setLabelDomain(userSkillToUpdate.getSkill().getDomain().getLabel());
+    userSkillDTO.setLabelCampaign(userSkillToUpdate.getCampaign().getLabel());
+    userSkillDTO.setMark(userSkillToUpdate.getMark());
+    userSkillDTO.setLastWriterId(userSkillToUpdate.getLastWriterId());
+    userSkillDTO.setStatusSkill(userSkillToUpdate.getStatusSkill());
+    return new ResponseEntity<>(userSkillDTO, HttpStatus.OK);
+  }
 
-    //if (userSkillToUpdate.getTeamMember().getStatusCurrentCampaign() == EStatusUserCampaign.INITIALIZED
-     // if (markToUpdate.getMark() != userSkillToUpdate.getMark() ){
-       try {
-          userSkillToUpdate.setMark(markToUpdate.getMark());
-          userSkillToUpdate.setStatusSkill(EStatusSkill.MARKED);
-          userSkillToUpdate = userSkillService.updateUserSkill(userSkillToUpdate);
-          UserSkillDto userSkillDTO = new UserSkillDto();
-          userSkillDTO.setUserSkillId(userSkillToUpdate.getId());
-          userSkillDTO.setUserId(userSkillToUpdate.getTeamMember().getId());
-          userSkillDTO.setLabel(userSkillToUpdate.getSkill().getLabel());
-          userSkillDTO.setLabelDomain(userSkillToUpdate.getSkill().getDomain().getLabel());
-          userSkillDTO.setLabelCampaign(userSkillToUpdate.getCampaign().getLabel());
-          userSkillDTO.setMark(userSkillToUpdate.getMark());
-          userSkillDTO.setLastWriterId(userSkillToUpdate.getLastWriterId());
-          userSkillDTO.setStatusSkill(userSkillToUpdate.getStatusSkill());
-          return new ResponseEntity<>(userSkillDTO, HttpStatus.OK);
-       } catch (IllegalArgumentException exception) {
-          return new ResponseEntity<>("Mark should be 0,1 or 2", HttpStatus.BAD_REQUEST);
-        }
-     /* } else {System.out.println("Pas de mise à jour car la note est la même");}
-     } else {
-        return new ResponseEntity<>("Mark rules not respected", HttpStatus.BAD_REQUEST);
-     }
-    return new ResponseEntity("StatusCampaign not good", HttpStatus.BAD_REQUEST);*/
-   }
 
   @PatchMapping(value = "/userskills/{userSkillId}/statusSkill")
   public ResponseEntity updateStatusSkill(Principal principal,
@@ -135,7 +136,7 @@ public class UserSkillController {
       return new ResponseEntity("User unknown", HttpStatus.NOT_FOUND);
     }
 
-     UserSkill userSkillToPatch = userSkillService.getUserSkill(Integer.valueOf(userSkillId));
+    UserSkill userSkillToPatch = userSkillService.getUserSkill(Integer.valueOf(userSkillId));
     if (userSkillToPatch == null) {
       return new ResponseEntity("UserSkill not existing", HttpStatus.NOT_FOUND);
     }

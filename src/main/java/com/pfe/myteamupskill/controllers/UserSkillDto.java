@@ -8,7 +8,7 @@ public class UserSkillDto {
   private String label;
   private String labelDomain;
   private String labelCampaign;
-  private int mark;
+  private Integer mark;
   private int lastWriterId;
   private EStatusSkill statusSkill;
 
@@ -55,16 +55,12 @@ public class UserSkillDto {
     this.labelCampaign = labelCampaign;
   }
 
-  public int getMark() {
+  public Integer getMark() {
     return mark;
   }
 
-  public void setMark(int mark) {
-    if ((mark <=2) && (mark >=0 )) {
+  public void setMark(Integer mark) {
       this.mark = mark;
-    } else {
-      throw new IllegalArgumentException("Mark not accepted");
-    }
   }
 
   public int getLastWriterId() {

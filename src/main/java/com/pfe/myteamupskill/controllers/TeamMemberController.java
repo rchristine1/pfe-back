@@ -4,14 +4,13 @@ import com.pfe.myteamupskill.models.*;
 import com.pfe.myteamupskill.security.jwt.JwtController;
 import com.pfe.myteamupskill.security.jwt.JwtFilter;
 import com.pfe.myteamupskill.security.jwt.JwtUtils;
-import com.pfe.myteamupskill.services.TeamMemberService;
-import com.pfe.myteamupskill.services.UserService;
-import com.pfe.myteamupskill.services.UserSkillService;
+import com.pfe.myteamupskill.services.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +29,13 @@ public class TeamMemberController {
   UserService userService;
 
   @Autowired
+  ManagerService managerService;
+
+  @Autowired
   UserSkillService userSkillService;
+
+  @Autowired
+  CampaignService campaignService;
 
   @Autowired
   JwtController jwtController;
@@ -39,6 +44,7 @@ public class TeamMemberController {
   JwtUtils jwtUtils;
 
   @GetMapping(value = "/teammembers/{teamMemberId}")
+  //@PreAuthorize("hasRole('toto')")
   public ResponseEntity teammember(Principal principal, @PathVariable("teamMemberId") String teamMemberId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     Integer teamMemberIdValue = Integer.valueOf(teamMemberId);
@@ -57,22 +63,29 @@ public class TeamMemberController {
     return new ResponseEntity(teamMemberDTO, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/teammembers/statuscampaign/{managerId}")
+  @GetMapping(value = "/teammembers/manager/{managerId}")
   @ResponseBody
+  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity teammembersStatusCampaign(Principal principal,
                                                   @RequestParam(required = false) String status,
                                                   @PathVariable("managerId") String managerId ) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     List<TeamMember> teamMemberList;
-    TeamMemberCampaignDto teamMemberCampaignDTO = new TeamMemberCampaignDto();
-    teamMemberCampaignDTO.setStatusUserCampaign(EStatusUserCampaign.valueOf(status));
 
-    if (status != null && teamMemberCampaignDTO.getStatusUserCampaign() == EStatusUserCampaign.SUBMITTED){
+    TeamMemberCampaignDto teamMemberCampaignDto= new TeamMemberCampaignDto();
+    teamMemberCampaignDto.setStatusUserCampaign(EStatusUserCampaign.valueOf(status));
+
+    Manager existingManager = managerService.findById(Integer.valueOf(managerId));
+    if (existingManager == null) {
+      return new ResponseEntity("Manager not found", HttpStatus.NOT_FOUND);
+    }
+
+    if (status != null ){
       teamMemberList = teamMemberService.findByStatusCurrentCampaignAndManagerId(
-              teamMemberCampaignDTO.getStatusUserCampaign(),
+              teamMemberCampaignDto.getStatusUserCampaign(),
               Integer.valueOf(managerId));
     } else {
-      teamMemberList = teamMemberService.getTeamMembers();
+      teamMemberList = teamMemberService.getTeamMembersByManager(Integer.valueOf(managerId));
     }
 
     List<TeamMemberDto> teamMemberDTOList = new ArrayList<>();
@@ -89,10 +102,10 @@ public class TeamMemberController {
       teamMemberDTOList.add(teamMemberDTO);
     }
     return new ResponseEntity(teamMemberDTOList, HttpStatus.OK);
-
   }
 
   @PostMapping("/teammembers/")
+  //@PreAuthorize("hasRole('TEAMLEADER')")
   public ResponseEntity add(@Valid @RequestBody TeamMember userEntity) {
 
     TeamMember existingUser = teamMemberService.findOneByLogin(userEntity.getLogin());
@@ -107,8 +120,33 @@ public class TeamMemberController {
     return new ResponseEntity<>(user, httpHeaders, HttpStatus.OK);
   }
 
+  @PatchMapping("/teammembers/{teamMemberId}/manager")
+  //@PreAuthorize("hasRole('TEAMLEADER')")
+  public ResponseEntity updateTeamMember(@PathVariable("teamMemberId") String teamMemberId,
+                                         @Valid @RequestBody TeamMemberManagerDto manager) {
+
+    TeamMember teamMemberToPatch = teamMemberService.getTeamMember(Integer.valueOf(teamMemberId));
+    if (teamMemberToPatch == null) {
+      return new ResponseEntity("User not found", HttpStatus.BAD_REQUEST);
+    }
+
+    Manager existingManager = managerService.findById(manager.getId());
+    if (existingManager == null) {
+      return new ResponseEntity("Manager does not exist", HttpStatus.BAD_REQUEST);
+    }
+
+    teamMemberToPatch.setManager(existingManager);
+    teamMemberToPatch = teamMemberService.updateTeamMember(teamMemberToPatch);
+    TeamMemberDto teamMemberDto = new TeamMemberDto();
+    teamMemberDto.setManager(teamMemberToPatch.getManager().getFirstName()+' '+ teamMemberToPatch.getManager().getLastName());
+    teamMemberDto.setStatusCurrentCampaign(teamMemberToPatch.getStatusCurrentCampaign());
+    teamMemberDto.setStatusVolunteerTrainer(teamMemberToPatch.getStatusVolunteerTrainer());
+    teamMemberDto.setStatusLastCampaign(teamMemberToPatch.getStatusLastCampaign());
+    return new ResponseEntity<>(teamMemberDto, HttpStatus.OK);
+  }
+
   @PatchMapping(value = "/teammembers/{teamMemberId}/statusCurrentCampaign")
-  //@PreAuthorize()
+  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity updateStatusCurrentCampaign(Principal principal,
                                                     @PathVariable("teamMemberId") String teamMemberId,
                                                     @Valid @RequestBody TeamMemberCampaignDto statusCampaignToUpdate) {
@@ -121,23 +159,21 @@ public class TeamMemberController {
     if (teamMemberToPatch == null) {
       return new ResponseEntity("TeamMember not existing", HttpStatus.NOT_FOUND);
     }
-    List<UserSkill> userSkillsMarked = userSkillService.listUserSkillsMarkedByTeamMember(teamMemberToPatch);
-    List<UserSkill> userSkills = userSkillService.listUserSkills(teamMemberToPatch);
-    if (userSkillsMarked.size() == userSkills.size()) {
-      try {
+    if (statusCampaignToUpdate.getStatusUserCampaign() == null) {
+      return new ResponseEntity("Campaign Status is null", HttpStatus.BAD_REQUEST);
+    }
+    try {
         teamMemberToPatch.setStatusCurrentCampaign(statusCampaignToUpdate.getStatusUserCampaign());
         teamMemberToPatch = teamMemberService.updateTeamMemberCampaign(teamMemberToPatch);
-        TeamMemberDto teamMemberDTO = new TeamMemberDto();
-        teamMemberDTO.setManager(teamMemberToPatch.getManager().getFirstName()+' '+ teamMemberToPatch.getManager().getLastName());
-        teamMemberDTO.setStatusCurrentCampaign(teamMemberToPatch.getStatusCurrentCampaign());
-        teamMemberDTO.setStatusVolunteerTrainer(teamMemberToPatch.getStatusVolunteerTrainer());
-        teamMemberDTO.setStatusLastCampaign(teamMemberToPatch.getStatusLastCampaign());
-        return new ResponseEntity<>(teamMemberDTO, HttpStatus.OK);
+        TeamMemberDto teamMemberDto = new TeamMemberDto();
+        teamMemberDto.setManager(teamMemberToPatch.getManager().getFirstName()+' '+ teamMemberToPatch.getManager().getLastName());
+        teamMemberDto.setStatusCurrentCampaign(teamMemberToPatch.getStatusCurrentCampaign());
+        teamMemberDto.setStatusVolunteerTrainer(teamMemberToPatch.getStatusVolunteerTrainer());
+        teamMemberDto.setStatusLastCampaign(teamMemberToPatch.getStatusLastCampaign());
+        return new ResponseEntity<>(teamMemberDto, HttpStatus.OK);
       } catch (IllegalArgumentException exception) {
         return new ResponseEntity<>("Bad Status Campaign", HttpStatus.BAD_REQUEST);
       }
-    }
-    return new ResponseEntity<>("UserSkills are not All Marked", HttpStatus.NOT_ACCEPTABLE);
   }
 }
 

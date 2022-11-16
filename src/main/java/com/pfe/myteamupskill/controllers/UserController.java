@@ -34,27 +34,6 @@ public class UserController {
   @Autowired
   JwtUtils jwtUtils;
 
-  /*@PostMapping("/users/{isTeamMember}")
-  public ResponseEntity add(@PathVariable("isTeamMember") Boolean isTeamMember, @Valid @RequestBody User userEntity) {
-
-    User existingUser = userService.findOneByLogin(userEntity.getLogin());
-    if(existingUser != null) {
-      return new ResponseEntity("User already existing", HttpStatus.BAD_REQUEST);
-    }
-    Authentication authentication = jwtController.logUser(userEntity.getLogin(), userEntity.getPassword());
-    String jwt = jwtUtils.generateToken(authentication);
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-    if (isTeamMember != null && isTeamMember == true) {
-      TeamMember user = teamMemberService.saveUser(userEntity);
-      return new ResponseEntity<>(user, httpHeaders, HttpStatus.OK);
-    } else {
-      Manager user = managerService.saveUser(userEntity);
-      return new ResponseEntity<>(user, httpHeaders, HttpStatus.OK);
-    }
-
-  }*/
-
   @CrossOrigin()
   @GetMapping(value ="/isConnected")
   public ResponseEntity getUSerConnected() {
