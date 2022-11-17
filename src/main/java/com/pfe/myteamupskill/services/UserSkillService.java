@@ -23,6 +23,11 @@ public class UserSkillService {
     return (List<UserSkill>) userSkills;
   }
 
+  public List<UserSkill> listUserSkills(TeamMember teamMember,Campaign campaign){
+    Iterable<UserSkill> userSkills= userSkillsRepository.findByTeamMemberAndCampaign(teamMember,campaign);
+    return (List<UserSkill>) userSkills;
+  }
+
   public List<UserSkill> listUserSkillsByTeamMemberByStatus(TeamMember teamMember,EStatusSkill statusSkill){
     Iterable<UserSkill> userSkillsMarked = userSkillsRepository.findByTeamMemberAndStatusSkill(teamMember,statusSkill);
     return (List<UserSkill>) userSkillsMarked;
@@ -71,6 +76,7 @@ public class UserSkillService {
         userSkillToUpdate.setStatusSkill(EStatusSkill.MARKED);}
       else {
         userSkillToUpdate.setStatusSkill(EStatusSkill.REVISED);
+        userSkillToUpdate.setLastWriterId(existingUser.getId());
       }
       return updateUserSkill(userSkillToUpdate);
     }

@@ -41,31 +41,59 @@ public class UserSkillController {
 
   @GetMapping(value = "/userskills/{teamMemberId}")
   //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
-  public ResponseEntity listUserSkills(Principal principal, @PathVariable("teamMemberId") String teamMemberId) {
+  public ResponseEntity listUserSkills(Principal principal,
+                                       @PathVariable("teamMemberId") String teamMemberId,
+                                       @RequestParam(required = false) String campaignId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     TeamMember teamMemberSelected = teamMemberService.getTeamMember(Integer.valueOf(teamMemberId));
     if (teamMemberSelected == null) {
       return new ResponseEntity("TeamMember unknown", HttpStatus.BAD_REQUEST);
     }
 
-    List<UserSkill> userSkills = userSkillService.listUserSkills(teamMemberSelected);
-    if (userSkills == null) {
-      return new ResponseEntity("UserSkills not initialized", HttpStatus.BAD_REQUEST);
+    if (campaignId != null) {
+      Campaign existingCampaign = campaignService.getCampaign(Integer.valueOf(campaignId));
+      if (existingCampaign == null) {
+        return new ResponseEntity("Campaign not found", HttpStatus.BAD_REQUEST);
+      } else {
+        List<UserSkill> userSkills = userSkillService.listUserSkills(teamMemberSelected, existingCampaign);
+        if (userSkills == null) {
+          return new ResponseEntity("UserSkills not found", HttpStatus.BAD_REQUEST);
+        }
+        List<UserSkillDto> userSkillDTOList = new ArrayList<>();
+        for (UserSkill us : userSkills) {
+          UserSkillDto userSkillDTO = new UserSkillDto();
+          userSkillDTO.setUserSkillId(us.getId());
+          userSkillDTO.setUserId(us.getTeamMember().getId());
+          userSkillDTO.setLabel(us.getSkill().getLabel());
+          userSkillDTO.setLabelDomain(us.getSkill().getDomain().getLabel());
+          userSkillDTO.setLabelCampaign(us.getCampaign().getLabel());
+          userSkillDTO.setMark(us.getMark());
+          userSkillDTO.setLastWriterId(us.getLastWriterId());
+          userSkillDTO.setStatusSkill(us.getStatusSkill());
+          userSkillDTOList.add(userSkillDTO);
+        }
+        return new ResponseEntity(userSkillDTOList, HttpStatus.OK);
+      }
+    } else {
+      List<UserSkill> userSkills = userSkillService.listUserSkills(teamMemberSelected);
+      if (userSkills == null) {
+        return new ResponseEntity("UserSkills not found", HttpStatus.BAD_REQUEST);
+      }
+      List<UserSkillDto> userSkillDTOList = new ArrayList<>();
+      for (UserSkill us : userSkills) {
+        UserSkillDto userSkillDTO = new UserSkillDto();
+        userSkillDTO.setUserSkillId(us.getId());
+        userSkillDTO.setUserId(us.getTeamMember().getId());
+        userSkillDTO.setLabel(us.getSkill().getLabel());
+        userSkillDTO.setLabelDomain(us.getSkill().getDomain().getLabel());
+        userSkillDTO.setLabelCampaign(us.getCampaign().getLabel());
+        userSkillDTO.setMark(us.getMark());
+        userSkillDTO.setLastWriterId(us.getLastWriterId());
+        userSkillDTO.setStatusSkill(us.getStatusSkill());
+        userSkillDTOList.add(userSkillDTO);
+      }
+      return new ResponseEntity(userSkillDTOList, HttpStatus.OK);
     }
-    List<UserSkillDto> userSkillDTOList = new ArrayList<>();
-    for (UserSkill us : userSkills) {
-      UserSkillDto userSkillDTO = new UserSkillDto();
-      userSkillDTO.setUserSkillId(us.getId());
-      userSkillDTO.setUserId(us.getTeamMember().getId());
-      userSkillDTO.setLabel(us.getSkill().getLabel());
-      userSkillDTO.setLabelDomain(us.getSkill().getDomain().getLabel());
-      userSkillDTO.setLabelCampaign(us.getCampaign().getLabel());
-      userSkillDTO.setMark(us.getMark());
-      userSkillDTO.setLastWriterId(us.getLastWriterId());
-      userSkillDTO.setStatusSkill(us.getStatusSkill());
-      userSkillDTOList.add(userSkillDTO);
-    }
-    return new ResponseEntity(userSkillDTOList, HttpStatus.OK);
   }
 
   @PostMapping("/userskills/{campaignId}")
