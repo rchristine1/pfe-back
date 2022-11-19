@@ -14,20 +14,27 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 @Component
 public class JwtUtils {
 
   long JWT_VALIDITY = 5 * 60 * 60;
 
   private static final String AUTHORITIES_KEY = "sub";
+  private static final String ROLES_KEY = "auth";
 
   @Value("${jwt.secret}")
   String secret;
 
   public String generateToken(Authentication authentication) {
-    Map<String, Object> claims = new HashMap<>();
+    String authorities = authentication.getAuthorities()
+            .stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.joining(","));
+
+
     return Jwts.builder()
-            .setClaims(claims)
+            .claim(ROLES_KEY,authorities)
             .setSubject(authentication.getName())
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + JWT_VALIDITY * 1000))
@@ -35,16 +42,18 @@ public class JwtUtils {
   }
 
   public Authentication getAuthentication(String token) {
-    Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+    Claims claims = Jwts.parser()
+            .setSigningKey(secret)
+            .parseClaimsJws(token)
+            .getBody();
 
-    Collection<? extends GrantedAuthority> authorities = Arrays
-            .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-            .filter(auth -> !auth.trim().isEmpty())
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+    Collection<? extends GrantedAuthority> authorities =
+            Arrays.stream(claims.get(ROLES_KEY).toString().split(","))
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
 
     User principal = new User(claims.getSubject(), "", authorities);
-
     return new UsernamePasswordAuthenticationToken(principal, token, authorities);
   }
+
 }

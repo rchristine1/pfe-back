@@ -43,8 +43,8 @@ public class TeamMemberController {
   @Autowired
   JwtUtils jwtUtils;
 
+  @PreAuthorize("hasAnyRole('ROLE_TEAMMEMBER','ROLE_TEAMLEADER')")
   @GetMapping(value = "/teammembers/{teamMemberId}")
-  //@PreAuthorize("hasRole('toto')")
   public ResponseEntity teammember(Principal principal, @PathVariable("teamMemberId") String teamMemberId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     Integer teamMemberIdValue = Integer.valueOf(teamMemberId);
@@ -63,9 +63,10 @@ public class TeamMemberController {
     return new ResponseEntity(teamMemberDTO, HttpStatus.OK);
   }
 
+
+  @PreAuthorize("hasRole('ROLE_TEAMLEADER')")
   @GetMapping(value = "/teammembers/manager/{managerId}")
   @ResponseBody
-  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity teammembersStatusCampaign(Principal principal,
                                                   @RequestParam(required = false) String status,
                                                   @PathVariable("managerId") String managerId ) {
@@ -103,9 +104,8 @@ public class TeamMemberController {
     }
     return new ResponseEntity(teamMemberDTOList, HttpStatus.OK);
   }
-
+  @PreAuthorize("hasAnyRole('ROLE_TEAMLEADER')")
   @PostMapping("/teammembers/")
-  //@PreAuthorize("hasRole('TEAMLEADER')")
   public ResponseEntity add(@Valid @RequestBody TeamMember userEntity) {
 
     TeamMember existingUser = teamMemberService.findOneByLogin(userEntity.getLogin());
@@ -113,15 +113,11 @@ public class TeamMemberController {
       return new ResponseEntity("User already existing", HttpStatus.BAD_REQUEST);
     }
     TeamMember user = teamMemberService.saveUser(userEntity);
-    Authentication authentication = jwtController.logUser(userEntity.getLogin(), userEntity.getPassword());
-    String jwt = jwtUtils.generateToken(authentication);
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-    return new ResponseEntity<>(user, httpHeaders, HttpStatus.OK);
-  }
 
+    return new ResponseEntity<>(user, HttpStatus.CREATED);
+  }
+  @PreAuthorize("hasRole('ROLE_TEAMLEADER')")
   @PatchMapping("/teammembers/{teamMemberId}/manager")
-  //@PreAuthorize("hasRole('TEAMLEADER')")
   public ResponseEntity updateTeamMember(@PathVariable("teamMemberId") String teamMemberId,
                                          @Valid @RequestBody TeamMemberManagerDto manager) {
 
@@ -145,8 +141,8 @@ public class TeamMemberController {
     return new ResponseEntity<>(teamMemberDto, HttpStatus.OK);
   }
 
+  @PreAuthorize("hasRole('ROLE_TEAMLEADER') or hasRole('ROLE_TEAMMEMBER')")
   @PatchMapping(value = "/teammembers/{teamMemberId}/statusCurrentCampaign")
-  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity updateStatusCurrentCampaign(Principal principal,
                                                     @PathVariable("teamMemberId") String teamMemberId,
                                                     @Valid @RequestBody TeamMemberCampaignDto statusCampaignToUpdate) {

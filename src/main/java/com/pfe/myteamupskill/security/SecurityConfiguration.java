@@ -1,9 +1,11 @@
 package com.pfe.myteamupskill.security;
 
 import com.pfe.myteamupskill.security.jwt.JwtFilter;
+import com.pfe.myteamupskill.security.jwt.JwtUtils;
 import com.pfe.myteamupskill.security.jwt.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -11,15 +13,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
-public class SecurityConfiguration {
+public class SecurityConfiguration{
 
   @Autowired
   RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
   @Autowired
   JwtFilter jwtFilter;
+
+  @Autowired
+  JwtUtils jwtUtils;
 
   @Bean
   SecurityFilterChain web(HttpSecurity http) throws Exception {
@@ -28,19 +36,13 @@ public class SecurityConfiguration {
             .exceptionHandling()
             .authenticationEntryPoint(restAuthenticationEntryPoint)
             .and()
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeRequests()
             .antMatchers("/").permitAll()
             .antMatchers("/static/**/").permitAll()
-            //.antMatchers("/users/*").permitAll()
-            //.antMatchers("/managers/*").permitAll()
-            //.antMatchers("/teammembers/campaign/*").permitAll()
-            //.antMatchers("/teammembers/*").permitAll()
-            //.antMatchers("/domains").permitAll()
-            //.antMatchers("/userskills/*").permitAll()
-            .antMatchers("/campaign/status").permitAll()
             .antMatchers("/authenticate").permitAll()
             .antMatchers("/isConnected").permitAll()
             .antMatchers("/v3/api-docs/**").permitAll()
@@ -49,8 +51,7 @@ public class SecurityConfiguration {
             .antMatchers("/swagger-ui.html").permitAll()
             .antMatchers("/webjars/**").permitAll()
             .anyRequest().authenticated();
-    http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-    return http.build();
+     return http.build();
   }
 
   @Bean

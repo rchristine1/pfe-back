@@ -38,9 +38,8 @@ public class UserSkillController {
   @Autowired
   CampaignService campaignService;
 
-
+  @PreAuthorize("hasRole('ROLE_TEAMMEMBER') or hasRole('ROLE_TEAMLEADER')")
   @GetMapping(value = "/userskills/{teamMemberId}")
-  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity listUserSkills(Principal principal,
                                        @PathVariable("teamMemberId") String teamMemberId,
                                        @RequestParam(required = false) String campaignId) {
@@ -96,8 +95,8 @@ public class UserSkillController {
     }
   }
 
+  @PreAuthorize("hasRole('ROLE_TEAMMEMBER') or hasRole('ROLE_TEAMLEADER')")
   @PostMapping("/userskills/{campaignId}")
-  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity add(Principal principal, @PathVariable("campaignId") String campaignId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     Campaign existingCampaign = campaignService.getCampaign(Integer.valueOf(campaignId));
@@ -123,8 +122,8 @@ public class UserSkillController {
      return new ResponseEntity<>(mapUserSkills, HttpStatus.CREATED);
   }
 
+  @PreAuthorize("hasRole('ROLE_TEAMMEMBER') or hasRole('ROLE_TEAMLEADER')")
   @PatchMapping(value = "/userskills/{userSkillId}/mark")
-  //@PreAuthorize("hasRole('TEAMMEMBER') or hasRole('TEAMLEADER')")
   public ResponseEntity updateMark(Principal principal,
                                    @PathVariable("userSkillId") String userSkillId,
                                    @Valid @RequestBody UserSkillMarkDto markToUpdate) {
@@ -152,7 +151,7 @@ public class UserSkillController {
     return new ResponseEntity<>(userSkillDTO, HttpStatus.OK);
   }
 
-
+  @PreAuthorize("hasRole('ROLE_TEAMLEADER')")
   @PatchMapping(value = "/userskills/{userSkillId}/statusSkill")
   public ResponseEntity updateStatusSkill(Principal principal,
                                    @PathVariable("userSkillId") String userSkillId,

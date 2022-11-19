@@ -7,6 +7,7 @@ import com.pfe.myteamupskill.security.jwt.JwtFilter;
 import com.pfe.myteamupskill.security.jwt.JwtUtils;
 import com.pfe.myteamupskill.services.ManagerService;
 import com.pfe.myteamupskill.services.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import javax.validation.Valid;
 import java.security.Principal;
 
 @RestController
+@SecurityRequirement(name = "bearerAuth")
 public class ManagerController {
   @Autowired
   ManagerService managerService;
@@ -32,9 +34,9 @@ public class ManagerController {
   @Autowired
   UserService userService;
 
+  @PreAuthorize("hasRole('ROLE_TEAMLEADER')")
   @GetMapping(value = "/managers/{managerId}")
-  //@PreAuthorize("hasRole('TEAMLEADER')")
-  public ResponseEntity teammember(Principal principal, @PathVariable("managerId") String managerId) {
+  public ResponseEntity manager(Principal principal, @PathVariable("managerId") String managerId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
     Integer managerIdValue = Integer.valueOf(managerId);
     Manager managerSelected = managerService.findById(managerIdValue);
@@ -49,20 +51,14 @@ public class ManagerController {
     return new ResponseEntity(managerDto, HttpStatus.OK);
   }
 
-
+  @PreAuthorize("hasRole('ROLE_TEAMLEADER')")
   @PostMapping("/managers/")
-  @PreAuthorize("hasRole('TEAMLEADER')")
   public ResponseEntity add(@Valid @RequestBody Manager userEntity) {
-
     Manager existingUser = managerService.findOneByLogin(userEntity.getLogin());
     if (existingUser != null) {
       return new ResponseEntity("User already existing", HttpStatus.BAD_REQUEST);
     }
     Manager user = managerService.saveUser(userEntity);
-    Authentication authentication = jwtController.logUser(userEntity.getLogin(), userEntity.getPassword());
-    String jwt = jwtUtils.generateToken(authentication);
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-    return new ResponseEntity<>(user, httpHeaders, HttpStatus.OK);
+    return new ResponseEntity<>(user, HttpStatus.CREATED);
   }
 }

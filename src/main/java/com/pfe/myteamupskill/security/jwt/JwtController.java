@@ -12,11 +12,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collection;
 
 @RestController
 public class JwtController {
@@ -32,12 +35,11 @@ public class JwtController {
   @PostMapping("/authenticate")
   public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest jwtRequest) {
     Authentication authentication = logUser(jwtRequest.getLogin(), jwtRequest.getPassword());
-    System.out.println("Controller Authentication "+jwtRequest.getLogin());
     String jwt = jwtUtils.generateToken(authentication);
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.add("Authorization", "Bearer " + jwt);
     Object principal = authentication.getPrincipal();
-     return new ResponseEntity<>(
+    return new ResponseEntity<>(
              new JwtResponse(
                       ((MyUser) principal).getUsername(),
                       ((MyUser) principal).getId(),
@@ -49,7 +51,6 @@ public class JwtController {
   public Authentication logUser(String login, String password) {
     Authentication authentication = authenticationManagerBuilder.getObject().authenticate(new UsernamePasswordAuthenticationToken(login, password));
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    System.out.println("Controller logUser");
     return authentication;
   }
 }
