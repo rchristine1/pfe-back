@@ -1,4 +1,4 @@
-package com.pfe.myteamupskill.controllers;
+package com.pfe.myteamupskill.controllers.dto;
 
 public class ManagerDto extends UserDto {
   private String team;

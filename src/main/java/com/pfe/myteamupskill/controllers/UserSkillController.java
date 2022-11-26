@@ -1,9 +1,13 @@
 package com.pfe.myteamupskill.controllers;
 
+import com.pfe.myteamupskill.controllers.dto.UserSkillDto;
+import com.pfe.myteamupskill.controllers.dto.UserSkillMarkDto;
+import com.pfe.myteamupskill.controllers.dto.UserSkillStatusDto;
 import com.pfe.myteamupskill.models.*;
 import com.pfe.myteamupskill.services.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -99,6 +103,8 @@ public class UserSkillController {
   @PostMapping("/userskills/{campaignId}")
   public ResponseEntity add(Principal principal, @PathVariable("campaignId") String campaignId) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add("Location", "/userskills/" + userConnectedId + "?campaignId=" + campaignId);
     Campaign existingCampaign = campaignService.getCampaign(Integer.valueOf(campaignId));
     if (existingCampaign == null) {
       return new ResponseEntity("Campaign unknown", HttpStatus.BAD_REQUEST);
@@ -119,7 +125,7 @@ public class UserSkillController {
           mapUserSkills.put(d.getLabel(), userSkill);
       }
     }
-     return new ResponseEntity<>(mapUserSkills, HttpStatus.CREATED);
+     return new ResponseEntity<>(httpHeaders, HttpStatus.CREATED);
   }
 
   @PreAuthorize("hasRole('ROLE_TEAMMEMBER') or hasRole('ROLE_TEAMLEADER')")

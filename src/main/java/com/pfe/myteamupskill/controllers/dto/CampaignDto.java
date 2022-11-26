@@ -1,4 +1,4 @@
-package com.pfe.myteamupskill.controllers;
+package com.pfe.myteamupskill.controllers.dto;
 
 import com.pfe.myteamupskill.models.EStatusCampaign;
 

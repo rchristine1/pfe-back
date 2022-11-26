@@ -1,9 +1,9 @@
 package com.pfe.myteamupskill.services;
 
-import com.pfe.myteamupskill.controllers.UserSkillAlreadyExistException;
-import com.pfe.myteamupskill.controllers.UserSkillMarkNotChangedException;
-import com.pfe.myteamupskill.controllers.UserSkillMarkRulesException;
-import com.pfe.myteamupskill.controllers.UserSkillNotFoundException;
+import com.pfe.myteamupskill.exceptions.UserSkillAlreadyExistException;
+import com.pfe.myteamupskill.exceptions.UserSkillMarkNotChangedException;
+import com.pfe.myteamupskill.exceptions.UserSkillMarkRulesException;
+import com.pfe.myteamupskill.exceptions.UserSkillNotFoundException;
 import com.pfe.myteamupskill.models.*;
 import com.pfe.myteamupskill.repository.UserSkillsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class UserSkillService {
   }
 
   public UserSkill updateUserSkill(UserSkill userSkillToUpdate) {
-    if ( userSkillToUpdate.getMark() >=0 || userSkillToUpdate.getMark() <= 2) {
+    if ( userSkillToUpdate.getMark() >=0 && userSkillToUpdate.getMark() <= 2 || userSkillToUpdate.getMark() == null) {
       return userSkillsRepository.save(userSkillToUpdate);
     } else {
       throw new UserSkillMarkRulesException();

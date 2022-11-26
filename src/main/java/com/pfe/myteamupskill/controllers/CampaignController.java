@@ -1,8 +1,9 @@
 package com.pfe.myteamupskill.controllers;
 
+import com.pfe.myteamupskill.controllers.dto.CampaignDto;
+import com.pfe.myteamupskill.controllers.dto.TeamMemberCampaignDto;
 import com.pfe.myteamupskill.models.Campaign;
 import com.pfe.myteamupskill.models.EStatusCampaign;
-import com.pfe.myteamupskill.models.Manager;
 import com.pfe.myteamupskill.services.CampaignService;
 import com.pfe.myteamupskill.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,17 +28,18 @@ public class CampaignController {
   CampaignService campaignService;
 
   @PreAuthorize("hasRole('ROLE_TEAMLEADER') or hasRole('ROLE_TEAMMEMBER')")
-  @GetMapping(value = "/campaign/status")
-  public ResponseEntity campaigncurrent(Principal principal, @RequestParam(required = false) String status) {
+  @GetMapping(value = "/campaigns")
+  public ResponseEntity getCampaign(Principal principal, @RequestParam(required=false) String status) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
-    Campaign campaignSelected = campaignService.getCampaignCurrent(EStatusCampaign.valueOf(status));
-    if (campaignSelected == null) {
-      return new ResponseEntity("Campaign not existing", HttpStatus.NOT_FOUND);
-    }
+    //try {
+      Campaign campaignSelected = campaignService.getCampaign(EStatusCampaign.valueOf(status));
+    //} catch(CampaignNotFoundException e){
+   // return new ResponseEntity(reason, HttpStatus.OK);
+    //}
+
     CampaignDto campaignDto = new CampaignDto();
     campaignDto.setLabel(campaignSelected.getLabel());
     campaignDto.setId(campaignSelected.getId());
-
     return new ResponseEntity(campaignDto, HttpStatus.OK);
   }
 }

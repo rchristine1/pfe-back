@@ -1,5 +1,7 @@
 package com.pfe.myteamupskill.services;
 
+import com.pfe.myteamupskill.exceptions.CampaignBadStatusException;
+import com.pfe.myteamupskill.exceptions.CampaignNotFoundException;
 import com.pfe.myteamupskill.models.Campaign;
 import com.pfe.myteamupskill.models.EStatusCampaign;
 import com.pfe.myteamupskill.repository.CampaignRepository;
@@ -29,11 +31,13 @@ public class CampaignService {
       throw new IllegalArgumentException("Campaign not found");
   }
 
-  public Campaign getCampaignCurrent(EStatusCampaign status) {
-    Optional<Campaign> campaignOptional=campaignRepository.findByStatus(status);
-    if (campaignOptional.isPresent())
-      return campaignOptional.get();
-    else
-      throw new IllegalArgumentException("campaign not found");
+  public Campaign getCampaign(EStatusCampaign status) {
+    if(status != null) {
+      Optional<Campaign> campaignOptional = campaignRepository.findByStatus(status);
+      if (campaignOptional.isPresent())
+        return campaignOptional.get();
+      else
+        throw new CampaignNotFoundException();
+    } else {throw new CampaignBadStatusException();}
   }
 }

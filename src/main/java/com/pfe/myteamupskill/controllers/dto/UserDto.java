@@ -1,15 +1,12 @@
-package com.pfe.myteamupskill.controllers;
+package com.pfe.myteamupskill.controllers.dto;
 
 public class UserDto {
 
   private  Integer id;
-
   private  String email;
-
+  private String login;
   private  String lastname;
-
   private  String firstname;
-
   private  String picture;
 
   public Integer getId() {

@@ -1,4 +1,4 @@
-package com.pfe.myteamupskill.controllers;
+package com.pfe.myteamupskill.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
