@@ -18,6 +18,14 @@ public class Team {
   public Team() {
   }
 
+  public Team(Integer id,String department,String division,String name) {
+    this.id = id;
+    this.department = department;
+    this.division = division;
+    this.name = name;
+  }
+
+
   public Integer getId() {
     return id;
   }

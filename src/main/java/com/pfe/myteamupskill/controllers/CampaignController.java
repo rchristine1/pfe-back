@@ -31,13 +31,8 @@ public class CampaignController {
   @GetMapping(value = "/campaigns")
   public ResponseEntity getCampaign(Principal principal, @RequestParam(required=false) String status) {
     Integer userConnectedId = userService.getUserConnectedId(principal);
-    //try {
-      Campaign campaignSelected = campaignService.getCampaign(EStatusCampaign.valueOf(status));
-    //} catch(CampaignNotFoundException e){
-   // return new ResponseEntity(reason, HttpStatus.OK);
-    //}
-
-    CampaignDto campaignDto = new CampaignDto();
+    Campaign campaignSelected = campaignService.getCampaign(EStatusCampaign.valueOf(status));
+     CampaignDto campaignDto = new CampaignDto();
     campaignDto.setLabel(campaignSelected.getLabel());
     campaignDto.setId(campaignSelected.getId());
     return new ResponseEntity(campaignDto, HttpStatus.OK);

@@ -2,6 +2,7 @@ package com.pfe.myteamupskill.models;
 
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @DiscriminatorValue("1")
@@ -17,11 +18,6 @@ public class TeamMember extends User{
   private EStatusUserCampaign statusCurrentCampaign;
   @Column(name="userstatuslastcampaign")
   private EStatusUserCampaign statusLastCampaign;
-
-  /*public TeamMember(String firstName,String lastName,String login,String password,String email) {
-
-    super(firstName,lastName,login,password,email);
-  }*/
 
   public TeamMember(){super();};
 
@@ -56,4 +52,17 @@ public class TeamMember extends User{
   public void setStatusLastCampaign(EStatusUserCampaign statusLastCampaign) {
     this.statusLastCampaign = statusLastCampaign;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    TeamMember that = (TeamMember) o;
+    return getId() == (that.getId())
+            && getManager().equals(that.getManager())
+            && getStatusVolunteerTrainer() == that.getStatusVolunteerTrainer()
+            && getStatusCurrentCampaign() == that.getStatusCurrentCampaign()
+            && getStatusLastCampaign() == that.getStatusLastCampaign();
+  }
+
 }

@@ -58,7 +58,6 @@ public class TeamMemberService {
   }
 
   public TeamMember findOneByLogin(String login) {
-
     TeamMember teamMember = teamMemberRepository.findOneByLogin(login);
     return teamMember;
   }

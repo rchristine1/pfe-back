@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtils {
 
-  long JWT_VALIDITY = 5 * 60 * 60;
+  //long JWT_VALIDITY = 5 * 60 * 60;
+  long JWT_VALIDITY = 20 * 60 ;
 
   private static final String AUTHORITIES_KEY = "sub";
   private static final String ROLES_KEY = "auth";

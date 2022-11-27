@@ -14,17 +14,6 @@ public class UserService {
   @Autowired
   UserRepository userRepository;
 
-  /*public User saveUser(User userEntity) {
-    User user = new Manager();
-    user.setLogin(userEntity.getLogin());
-    user.setPassword(new BCryptPasswordEncoder().encode(userEntity.getPassword()));
-    user.setLastName(StringUtils.capitalize(userEntity.getLastName()));
-    user.setFirstName(StringUtils.capitalize(userEntity.getFirstName()));
-    user.setEmail(userEntity.getEmail());
-    userRepository.save(user);
-    return user;
-  }*/
-
   public User findOneByLogin(String login) {
     User user = userRepository.findOneByLogin(login);
     return user;

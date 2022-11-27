@@ -45,9 +45,6 @@ public class UserController {
     if (principal instanceof UserDetails) {
       System.out.println("condition if");
       return new ResponseEntity((((UserDetails) principal).getUsername()),HttpStatus.OK);
-      //UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-      //return new ResponseEntity<>(new JwtResponse(((MyUser) principal).getUsername(),((MyUser) principal).getId(),((MyUser) principal).getFirstname(), ((MyUser) principal).getLastname()),HttpStatus.OK);
-      //return new ResponseEntity(new JwtResponse(userDetails.getUsername(),userDetails.getId()), HttpStatus.OK);
     }
     return new ResponseEntity("User is not connected", HttpStatus.FORBIDDEN);
   }

@@ -36,6 +36,7 @@ public class JwtController {
   public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest jwtRequest) {
     Authentication authentication = logUser(jwtRequest.getLogin(), jwtRequest.getPassword());
     if (authentication == null){
+      SecurityContextHolder.clearContext();
       throw new AppException("Authentication failed",HttpStatus.FORBIDDEN);
     }
     String jwt = jwtUtils.generateToken(authentication);
